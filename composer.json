@@ -1,0 +1,11 @@
+{
+    "name": "timesplinter/oyster",
+    "autoload": {
+        "psr-4": {
+            "Timesplinter\\Oyster\\": "src/"
+        }
+    },
+    "bin": [
+        "console"
+    ]
+}

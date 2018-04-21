@@ -1,0 +1,31 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+use Timesplinter\Oyster\Command\CdCommandInterface;
+use Timesplinter\Oyster\Console;
+use Timesplinter\Oyster\Executor;
+use Timesplinter\Oyster\Command\PwdCommandInterface;
+use Timesplinter\Oyster\OperatingSystemAdapter\DarwinAdapter;
+
+require __DIR__ . '/vendor/autoload.php';
+
+$builtinCommands = [
+    new PwdCommandInterface(),
+    new CdCommandInterface()
+];
+
+$executor = new Executor();
+
+if ('Darwin' === PHP_OS) {
+    $osAdapter = new DarwinAdapter($executor);
+} else {
+    echo "Operating system currently not supported: {PHP_OS}\n";
+    exit;
+}
+
+$console = new Console($osAdapter, $builtinCommands, $executor);
+$console->run();
