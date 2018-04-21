@@ -17,7 +17,7 @@ directory.
     "ps1": "{%CURRENT_DIRECTORY%}$ ",
     "env": {
         "vars": {
-            "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Users/Pascal/bin"
+            "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
         }
     }
 }
