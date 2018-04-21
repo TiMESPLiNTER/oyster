@@ -48,4 +48,16 @@ class LinuxAdapter implements OperatingSystemAdapter
     {
         return trim($this->executor->execute('whoami', [], __DIR__, []));
     }
+
+    /**
+     * Returns the name of the device
+     * @param string $type
+     * @return string
+     */
+    public function getHostname(string $type): string
+    {
+        $flag = self::HOSTNAME_FULL === $type ? '-f' : '-s';
+
+        return trim($this->executor->execute('hostname', [$flag], __DIR__, []));
+    }
 }

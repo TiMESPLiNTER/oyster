@@ -107,6 +107,10 @@ final class Console
         return null;
     }
 
+    /**
+     * @param string $identifier
+     * @return null|CommandInterface
+     */
     private function findCommand(string $identifier): ?CommandInterface
     {
         foreach ($this->commands as $command) {
@@ -118,13 +122,18 @@ final class Console
         return null;
     }
 
+    /**
+     * @return string
+     */
     private function preparePs1(): string
     {
         $ps1 = OutputColorizer::colorize($this->config['ps1']);
 
         return strtr($ps1, [
             '{%CURRENT_DIRECTORY%}' => getcwd(),
-            '{%USER%}' => $this->osAdapter->getCurrentUser()
+            '{%USER%}' => $this->osAdapter->getCurrentUser(),
+            '{%HOST%}' => $this->osAdapter->getHostname(OperatingSystemAdapter::HOSTNAME_SHORT),
+            '{%HOST_FULL%}' => $this->osAdapter->getHostname(OperatingSystemAdapter::HOSTNAME_FULL)
         ]);
     }
 

@@ -9,6 +9,11 @@ namespace Timesplinter\Oyster\OperatingSystemAdapter;
  */
 interface OperatingSystemAdapter
 {
+
+    const HOSTNAME_FULL = 'full';
+
+    const HOSTNAME_SHORT = 'short';
+
     /**
      * Returns the home directory for a user
      * @param string $user
@@ -21,4 +26,11 @@ interface OperatingSystemAdapter
      * @return string
      */
     public function getCurrentUser(): string;
+
+    /**
+     * Returns the hostname of the device
+     * @param string $type
+     * @return string
+     */
+    public function getHostname(string $type): string;
 }
