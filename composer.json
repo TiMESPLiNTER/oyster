@@ -6,6 +6,9 @@
             "Timesplinter\\Oyster\\": "src/"
         }
     },
+    "require": {
+        "php": ">=7.2"
+    },
     "bin": [
         "console"
     ]
