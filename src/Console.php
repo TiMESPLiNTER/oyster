@@ -120,7 +120,8 @@ final class Console
     private function preparePs1(): string
     {
         return strtr($this->config['ps1'], [
-            '{%CURRENT_DIRECTORY%}' => getcwd()
+            '{%CURRENT_DIRECTORY%}' => getcwd(),
+            '{%USER%}' => $this->osAdapter->getCurrentUser()
         ]);
     }
 
