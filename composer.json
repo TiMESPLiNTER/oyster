@@ -1,5 +1,6 @@
 {
     "name": "timesplinter/oyster",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Timesplinter\\Oyster\\": "src/"

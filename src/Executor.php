@@ -13,6 +13,7 @@ class Executor
      * @todo make async!
      * @param string $command
      * @param array $arguments
+     * @param string $cwd
      * @param array $vars
      * @return null|string
      */
@@ -22,12 +23,10 @@ class Executor
         $streamContent = null;
 
         $descriptorSpec = [
-            0 => ['pipe', "r"],
-            1 => ['pipe', "w"],
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
             //2 => ['file', "./error-output.txt", "a"]
         ];
-
-        $env = $vars; //array('some_option' => 'aeiou');
 
         //var_dump($command . ' ' . implode(' ', $arguments));
 
@@ -36,7 +35,7 @@ class Executor
             $descriptorSpec,
             $pipes,
             $cwd,
-            $env
+            $vars
         );
 
         if (is_resource($process)) {
