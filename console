@@ -10,6 +10,7 @@ use Timesplinter\Oyster\Console;
 use Timesplinter\Oyster\Executor;
 use Timesplinter\Oyster\Command\PwdCommandInterface;
 use Timesplinter\Oyster\OperatingSystemAdapter\DarwinAdapter;
+use Timesplinter\Oyster\OperatingSystemAdapter\LinuxAdapter;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -22,6 +23,8 @@ $executor = new Executor();
 
 if ('Darwin' === PHP_OS) {
     $osAdapter = new DarwinAdapter($executor);
+} elseif ('Linux' === PHP_OS) {
+    $osAdapter = new LinuxAdapter($executor);
 } else {
     echo "Operating system currently not supported: ".PHP_OS."\n";
     exit;
