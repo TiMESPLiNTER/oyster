@@ -33,7 +33,7 @@ class LinuxAdapter implements OperatingSystemAdapter
      */
     public function getHomeDirectory(string $user): string
     {
-        $output = trim($this->executor->execute('getent', ['passwd', 'tecmint'], __DIR__, []));
+        $output = trim($this->executor->execute('getent', ['passwd', $user], __DIR__, []));
 
         $info = explode(':', $output);
 
