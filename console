@@ -23,7 +23,7 @@ $executor = new Executor();
 if ('Darwin' === PHP_OS) {
     $osAdapter = new DarwinAdapter($executor);
 } else {
-    echo "Operating system currently not supported: {PHP_OS}\n";
+    echo "Operating system currently not supported: ".PHP_OS."\n";
     exit;
 }
 
