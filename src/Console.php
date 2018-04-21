@@ -130,11 +130,23 @@ final class Console
         $ps1 = OutputColorizer::colorize($this->config['ps1']);
 
         return strtr($ps1, [
-            '{%CURRENT_DIRECTORY%}' => getcwd(),
+            '{%CURRENT_DIRECTORY%}' => $this->getCwd(),
             '{%USER%}' => $this->osAdapter->getCurrentUser(),
             '{%HOST%}' => $this->osAdapter->getHostname(OperatingSystemAdapter::HOSTNAME_SHORT),
             '{%HOST_FULL%}' => $this->osAdapter->getHostname(OperatingSystemAdapter::HOSTNAME_FULL)
         ]);
+    }
+
+    private function getCwd(): string
+    {
+        $cwd = getcwd();
+        $homeDirectory = $this->config['env']['vars']['HOME'];
+
+        if (0 === strpos($cwd, $homeDirectory)) {
+            $cwd = '~' . substr($cwd, strlen($homeDirectory));
+        }
+
+        return $cwd;
     }
 
     /**
@@ -148,7 +160,7 @@ final class Console
 
         if (true === file_exists($configFilePath)) {
             if (null === $config = json_decode(file_get_contents($configFilePath), true)) {
-                throw new \RuntimeException("You have a syntax error in your .oysterrc file");
+                throw new \RuntimeException("You have a syntax error in your .oysterrc file\n");
             }
         }
 
