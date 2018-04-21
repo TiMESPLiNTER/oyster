@@ -14,7 +14,7 @@ directory.
 
 ````json
 {
-    "ps1": "{%CURRENT_DIRECTORY%}$ ",
+    "ps1": "<fg:red>{%USER%}</fg:red>:{%CURRENT_DIRECTORY%}$ ",
     "env": {
         "vars": {
             "PATH": "/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"

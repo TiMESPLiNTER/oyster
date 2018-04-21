@@ -6,6 +6,7 @@ namespace Timesplinter\Oyster;
 
 use Timesplinter\Oyster\Command\CommandInterface;
 use Timesplinter\Oyster\Command\CommandExecutionException;
+use Timesplinter\Oyster\Helper\OutputColorizer;
 use Timesplinter\Oyster\OperatingSystemAdapter\OperatingSystemAdapter;
 
 /**
@@ -119,7 +120,9 @@ final class Console
 
     private function preparePs1(): string
     {
-        return strtr($this->config['ps1'], [
+        $ps1 = OutputColorizer::colorize($this->config['ps1']);
+
+        return strtr($ps1, [
             '{%CURRENT_DIRECTORY%}' => getcwd(),
             '{%USER%}' => $this->osAdapter->getCurrentUser()
         ]);
