@@ -9,6 +9,7 @@ use Timesplinter\Oyster\Command\CdCommandInterface;
 use Timesplinter\Oyster\Console;
 use Timesplinter\Oyster\Executor;
 use Timesplinter\Oyster\Command\PwdCommandInterface;
+use Timesplinter\Oyster\History\ReadlineHistory;
 use Timesplinter\Oyster\OperatingSystemAdapter\DarwinAdapter;
 use Timesplinter\Oyster\OperatingSystemAdapter\LinuxAdapter;
 
@@ -30,5 +31,5 @@ if ('Darwin' === PHP_OS) {
     exit;
 }
 
-$console = new Console($osAdapter, $builtinCommands, $executor);
+$console = new Console($osAdapter, $builtinCommands, $executor, new ReadlineHistory());
 $console->run();

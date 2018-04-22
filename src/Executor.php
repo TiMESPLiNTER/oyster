@@ -10,7 +10,7 @@ namespace Timesplinter\Oyster;
 class Executor
 {
     /**
-     * @todo make async!
+     * @todo make async! and needs TTY support for vim etc [e.x. system("command > `tty`")]
      * @param string $command
      * @param array $arguments
      * @param string $cwd

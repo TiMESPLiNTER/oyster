@@ -6,7 +6,10 @@ namespace Timesplinter\Oyster;
 
 use Timesplinter\Oyster\Command\CommandInterface;
 use Timesplinter\Oyster\Command\CommandExecutionException;
+use Timesplinter\Oyster\History\FileHistoryInterface;
+use Timesplinter\Oyster\History\ReadlineHistory;
 use Timesplinter\Oyster\Helper\OutputColorizer;
+use Timesplinter\Oyster\History\HistoryInterface;
 use Timesplinter\Oyster\OperatingSystemAdapter\OperatingSystemAdapter;
 
 /**
@@ -14,6 +17,11 @@ use Timesplinter\Oyster\OperatingSystemAdapter\OperatingSystemAdapter;
  */
 final class Console
 {
+
+    /**
+     * @var bool
+     */
+    private $running = true;
 
     /**
      * @var CommandInterface[]|array
@@ -36,38 +44,58 @@ final class Console
     private $osAdapter;
 
     /**
+     * @var ReadlineHistory
+     */
+    private $history;
+
+    /**
      * Console constructor.
      * @param OperatingSystemAdapter $osAdapter
      * @param array|CommandInterface[] $commands
      * @param Executor $executor
+     * @param HistoryInterface $history
      */
-    public function __construct(OperatingSystemAdapter $osAdapter, array $commands, Executor $executor)
-    {
+    public function __construct(
+        OperatingSystemAdapter $osAdapter,
+        array $commands,
+        Executor $executor,
+        HistoryInterface $history
+    ) {
         $this->commands = $commands;
         $this->executor = $executor;
         $this->osAdapter = $osAdapter;
+        $this->history = $history;
     }
 
     public function run(): void
     {
         $homeDirectory = $this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser());
 
+        if ($this->history instanceof FileHistoryInterface) {
+            $this->history->setFilename($homeDirectory . DIRECTORY_SEPARATOR . '.oyster_history');
+        }
+
+        $this->history->loadHistory();
+
         $this->config = $this->loadConfiguration($homeDirectory);
 
-        while (true) {
-            echo $this->preparePs1();
+        while (true === $this->running) {
+            $temp = readline($this->preparePs1());
 
-            $temp = fopen('php://stdin', 'r');
-
-            if ('' === $line = trim(fgets($temp))) {
+            if ('' === $line = trim($temp)) {
                 continue;
             }
+
+            readline_add_history($line);
 
             $lineParts = preg_split('/\s+/', $line);
             $commandStr = array_shift($lineParts);
             $args = $lineParts;
 
-            if (null !== $command = $this->findCommand($commandStr)) {
+            if ('exit' === $commandStr) {
+                // Exit the console
+                $this->running = false;
+            } elseif (null !== $command = $this->findCommand($commandStr)) {
                 // Console command
                 try {
                     echo $command->execute($args);
@@ -75,14 +103,15 @@ final class Console
                     echo sprintf("%s: %s\n", $commandStr, $e->getMessage());
                 }
             } elseif (null !== $executablePath = $this->findExecutable($commandStr)) {
-                //echo "Command found: {$executablePath}. Execute...\n";
+                // Script or binary to execute
                 $output = $this->executor->execute($executablePath, $args, getcwd(), $this->config['env']['vars']);
                 echo $output;
-                // Script or binary to execute
             } else {
                 printf("Command \"%s\" not found\n" , trim($commandStr));
             }
         }
+
+        $this->history->storeHistory();
     }
 
     /**
