@@ -108,25 +108,27 @@ final class Console
 
             readline_add_history($line);
 
-            $lineParts = preg_split('/\s+/', $line);
-            $commandStr = array_shift($lineParts);
-            $args = $lineParts;
+            foreach (preg_split('/\s+&&\s+/', $line, -1, PREG_SPLIT_NO_EMPTY) as $command) {
+                $commandParts = preg_split('/\s+/', $command, -1, PREG_SPLIT_NO_EMPTY);
+                $commandStr = array_shift($commandParts);
+                $args = $commandParts;
 
-            if ('exit' === $commandStr) {
-                // Exit the console
-                $this->halt();
-            } elseif (null !== $command = $this->findCommand($commandStr)) {
-                // Console command
-                try {
-                    $command->execute($args);
-                } catch (CommandExecutionException $e) {
-                    $this->output->write(sprintf("%s: %s\n", $commandStr, $e->getMessage()));
+                if ('exit' === $commandStr) {
+                    // Exit the console
+                    $this->halt();
+                } elseif (null !== $builtinCommand = $this->findBuiltinCommand($commandStr)) {
+                    // Console command
+                    try {
+                        $builtinCommand->execute($args);
+                    } catch (CommandExecutionException $e) {
+                        $this->output->write(sprintf("%s: %s\n", $commandStr, $e->getMessage()));
+                    }
+                } elseif (null !== $executablePath = $this->findExecutable($commandStr)) {
+                    // Script or binary to execute
+                    $this->executor->execute($executablePath, $args, getcwd(), $this->config['env']['vars']);
+                } else {
+                    $this->output->write(sprintf("oyster: Command \"%s\" not found\n" , trim($commandStr)));
                 }
-            } elseif (null !== $executablePath = $this->findExecutable($commandStr)) {
-                // Script or binary to execute
-                $this->executor->execute($executablePath, $args, getcwd(), $this->config['env']['vars']);
-            } else {
-                $this->output->write(sprintf("oyster: Command \"%s\" not found\n" , trim($commandStr)));
             }
         }
 
@@ -164,7 +166,7 @@ final class Console
      * @param string $identifier
      * @return null|CommandInterface
      */
-    private function findCommand(string $identifier): ?CommandInterface
+    private function findBuiltinCommand(string $identifier): ?CommandInterface
     {
         foreach ($this->commands as $command) {
             if ($identifier === $command->getIdentifier()) {
