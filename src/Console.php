@@ -10,6 +10,7 @@ use Timesplinter\Oyster\History\FileHistoryInterface;
 use Timesplinter\Oyster\History\ReadlineHistory;
 use Timesplinter\Oyster\Helper\OutputColorizer;
 use Timesplinter\Oyster\History\HistoryInterface;
+use Timesplinter\Oyster\Input\InputInterface;
 use Timesplinter\Oyster\OperatingSystemAdapter\OperatingSystemAdapter;
 
 /**
@@ -22,6 +23,11 @@ final class Console
      * @var bool
      */
     private $running = true;
+
+    /**
+     * @var InputInterface
+     */
+    private $input;
 
     /**
      * @var CommandInterface[]|array
@@ -50,17 +56,20 @@ final class Console
 
     /**
      * Console constructor.
+     * @param InputInterface $input
      * @param OperatingSystemAdapter $osAdapter
      * @param array|CommandInterface[] $commands
      * @param Executor $executor
      * @param HistoryInterface $history
      */
     public function __construct(
+        InputInterface $input,
         OperatingSystemAdapter $osAdapter,
         array $commands,
         Executor $executor,
         HistoryInterface $history
     ) {
+        $this->input = $input;
         $this->commands = $commands;
         $this->executor = $executor;
         $this->osAdapter = $osAdapter;
@@ -80,7 +89,7 @@ final class Console
         $this->config = $this->loadConfiguration($homeDirectory);
 
         while (true === $this->running) {
-            $temp = readline($this->preparePs1());
+            $temp = $this->input->read($this->preparePs1());
 
             if ('' === $line = trim($temp)) {
                 continue;

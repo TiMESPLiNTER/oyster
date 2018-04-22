@@ -9,7 +9,10 @@ use Timesplinter\Oyster\Command\CdCommandInterface;
 use Timesplinter\Oyster\Console;
 use Timesplinter\Oyster\Executor;
 use Timesplinter\Oyster\Command\PwdCommandInterface;
+use Timesplinter\Oyster\Helper\NullHistory;
 use Timesplinter\Oyster\History\ReadlineHistory;
+use Timesplinter\Oyster\Input\ReadlineInput;
+use Timesplinter\Oyster\Input\StdInInput;
 use Timesplinter\Oyster\OperatingSystemAdapter\DarwinAdapter;
 use Timesplinter\Oyster\OperatingSystemAdapter\LinuxAdapter;
 
@@ -31,5 +34,14 @@ if ('Darwin' === PHP_OS) {
     exit;
 }
 
-$console = new Console($osAdapter, $builtinCommands, $executor, new ReadlineHistory());
+if(true === function_exists('readline')) {
+    $history = new ReadlineHistory();
+    $input = new ReadlineInput();
+} else {
+    $history = new NullHistory();
+    $input = new StdInInput();
+    echo "INFO: You're PHP binary isn't compiled with readline support.\n";
+}
+
+$console = new Console($input, $osAdapter, $builtinCommands, $executor, $history);
 $console->run();
