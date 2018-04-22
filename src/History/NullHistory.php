@@ -24,4 +24,9 @@ class NullHistory implements HistoryInterface
     {
         return true;
     }
+
+    public function getHistory(): array
+    {
+        return [];
+    }
 }

@@ -14,4 +14,6 @@ interface HistoryInterface
     public function storeHistory(): void;
 
     public function addToHistory(string $line): bool;
+
+    public function getHistory(): array;
 }

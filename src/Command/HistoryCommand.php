@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 namespace Timesplinter\Oyster\Command;
 
+use Timesplinter\Oyster\History\HistoryInterface;
 use Timesplinter\Oyster\Output\OutputInterface;
 
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
  */
-class PwdCommand implements CommandInterface
+class HistoryCommand implements CommandInterface
 {
+
+    /**
+     * @var HistoryInterface
+     */
+    private $history;
 
     /**
      * @var OutputInterface
@@ -18,11 +24,13 @@ class PwdCommand implements CommandInterface
     private $output;
 
     /**
-     * PwdCommand constructor.
+     * HistoryCommand constructor.
      * @param OutputInterface $output
+     * @param HistoryInterface $history
      */
-    public function __construct(OutputInterface $output)
+    public function __construct(OutputInterface $output, HistoryInterface $history)
     {
+        $this->history = $history;
         $this->output = $output;
     }
 
@@ -31,7 +39,7 @@ class PwdCommand implements CommandInterface
      */
     public function getIdentifier(): string
     {
-        return 'pwd';
+        return 'history';
     }
 
     /**
@@ -40,7 +48,7 @@ class PwdCommand implements CommandInterface
      */
     public function execute(array $arguments): int
     {
-        $this->output->writeLn(getcwd());
+        $this->output->writeLn(implode(PHP_EOL, $this->history->getHistory()));
 
         return 0;
     }

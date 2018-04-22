@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace Timesplinter\Oyster\OperatingSystemAdapter;
 
 use Timesplinter\Oyster\Executor;
+use Timesplinter\Oyster\Output\BufferedOutput;
 
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
@@ -19,12 +20,19 @@ class DarwinAdapter implements OperatingSystemAdapter
     private $executor;
 
     /**
+     * @var BufferedOutput
+     */
+    private $output;
+
+    /**
      * DarwinAdapter constructor.
      * @param Executor $executor
+     * @param BufferedOutput $output
      */
-    public function __construct(Executor $executor)
+    public function __construct(Executor $executor, BufferedOutput $output)
     {
         $this->executor = $executor;
+        $this->output = $output;
     }
 
     /**
@@ -34,9 +42,9 @@ class DarwinAdapter implements OperatingSystemAdapter
      */
     public function getHomeDirectory(string $user): string
     {
-        $output = $this->executor->execute('dscl', ['.', '-read /Users/'.$user, 'NFSHomeDirectory'], __DIR__, []);
+        $this->executor->execute('dscl', ['.', '-read /Users/'.$user, 'NFSHomeDirectory'], __DIR__, []);
 
-        if (0 === preg_match('/^NFSHomeDirectory:\s*(.+)$/', trim($output), $matches)) {
+        if (0 === preg_match('/^NFSHomeDirectory:\s*(.+)$/', trim($this->output->getBuffer()), $matches)) {
             throw new \RuntimeException('Could not find home directory for user: ' . $user);
         }
 
@@ -49,7 +57,9 @@ class DarwinAdapter implements OperatingSystemAdapter
      */
     public function getCurrentUser(): string
     {
-        return trim($this->executor->execute('users', [], __DIR__, []));
+        $this->executor->execute('users', [], __DIR__, []);
+
+        return trim($this->output->getBuffer());
     }
 
     /**
@@ -61,6 +71,8 @@ class DarwinAdapter implements OperatingSystemAdapter
     {
         $flag = self::HOSTNAME_FULL === $type ? '-f' : '-s';
 
-        return trim($this->executor->execute('hostname', [$flag], __DIR__, []));
+        $this->executor->execute('hostname', [$flag], __DIR__, []);
+
+        return trim($this->output->getBuffer());
     }
 }

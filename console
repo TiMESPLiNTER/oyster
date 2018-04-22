@@ -3,9 +3,10 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace Timesplinter\Oyster\Bin;
 
 use Timesplinter\Oyster\Command\CdCommand;
+use Timesplinter\Oyster\Command\HistoryCommand;
 use Timesplinter\Oyster\Console;
 use Timesplinter\Oyster\Executor;
 use Timesplinter\Oyster\Command\PwdCommand;
@@ -15,22 +16,22 @@ use Timesplinter\Oyster\Input\ReadlineInput;
 use Timesplinter\Oyster\Input\StdInInput;
 use Timesplinter\Oyster\OperatingSystemAdapter\DarwinAdapter;
 use Timesplinter\Oyster\OperatingSystemAdapter\LinuxAdapter;
+use Timesplinter\Oyster\Output\BufferedOutput;
+use Timesplinter\Oyster\Output\StdOutOutput;
 
 require __DIR__ . '/vendor/autoload.php';
 
-$builtinCommands = [
-    new PwdCommand(),
-    new CdCommand()
-];
+$stdOutOutput = new StdOutOutput();
 
-$executor = new Executor();
+$osAdapterOutput = new BufferedOutput();
+$osAdapterExecutor = new Executor($osAdapterOutput);
 
 if ('Darwin' === PHP_OS) {
-    $osAdapter = new DarwinAdapter($executor);
+    $osAdapter = new DarwinAdapter($osAdapterExecutor, $osAdapterOutput);
 } elseif ('Linux' === PHP_OS) {
-    $osAdapter = new LinuxAdapter($executor);
+    $osAdapter = new LinuxAdapter($osAdapterExecutor, $osAdapterOutput);
 } else {
-    echo "Operating system currently not supported: ".PHP_OS."\n";
+    $stdOutOutput->writeLn('Operating system currently not supported: '.PHP_OS);
     exit;
 }
 
@@ -40,8 +41,16 @@ if(true === function_exists('readline')) {
 } else {
     $history = new NullHistory();
     $input = new StdInInput();
-    echo "INFO: You're PHP binary isn't compiled with readline support.\n";
+    $stdOutOutput->writeLn('INFO: You\'re PHP binary isn\'t compiled with readline support.');
 }
 
-$console = new Console($input, $osAdapter, $builtinCommands, $executor, $history);
+$builtinCommands = [
+    new PwdCommand($stdOutOutput),
+    new CdCommand(),
+    new HistoryCommand($stdOutOutput, $history)
+];
+
+$executor = new Executor($stdOutOutput);
+
+$console = new Console($input, $stdOutOutput, $osAdapter, $builtinCommands, $executor, $history);
 $console->run();

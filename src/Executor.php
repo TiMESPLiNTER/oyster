@@ -4,20 +4,37 @@ declare(strict_types=1);
 
 namespace Timesplinter\Oyster;
 
+use Timesplinter\Oyster\Output\OutputInterface;
+
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
  */
 class Executor
 {
+
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
+    /**
+     * Executor constructor.
+     * @param OutputInterface $output
+     */
+    public function __construct(OutputInterface $output)
+    {
+        $this->output = $output;
+    }
+
     /**
      * @todo make async! and needs TTY support for vim etc [e.x. system("command > `tty`")]
      * @param string $command
      * @param array $arguments
      * @param string $cwd
      * @param array $vars
-     * @return null|string
+     * @return int
      */
-    public function execute(string $command, array $arguments, string $cwd, array $vars): ?string
+    public function execute(string $command, array $arguments, string $cwd, array $vars): int
     {
         $stream = null;
         $streamContent = null;
@@ -42,12 +59,12 @@ class Executor
             /*fwrite($pipes[0], '<?php echo "HELLO FROM TEST"; ?>'); // here directly the code of child.php
             fclose($pipes[0]);*/
 
-            $streamContent = stream_get_contents($pipes[1]);
+            $this->output->write(stream_get_contents($pipes[1]));
             fclose($pipes[1]);
 
             proc_close($process);
         }
 
-        return $streamContent;
+        return 0;
     }
 }

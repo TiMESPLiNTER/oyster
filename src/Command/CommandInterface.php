@@ -17,8 +17,8 @@ interface CommandInterface
 
     /**
      * @param array $arguments
-     * @return string
+     * @return int
      * @throws CommandExecutionException
      */
-    public function execute(array $arguments): string;
+    public function execute(array $arguments): int;
 }

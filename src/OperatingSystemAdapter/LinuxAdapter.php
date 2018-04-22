@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Timesplinter\Oyster\OperatingSystemAdapter;
 
 use Timesplinter\Oyster\Executor;
+use Timesplinter\Oyster\Output\BufferedOutput;
 
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
@@ -18,12 +19,19 @@ class LinuxAdapter implements OperatingSystemAdapter
     private $executor;
 
     /**
+     * @var BufferedOutput
+     */
+    private $output;
+
+    /**
      * DarwinAdapter constructor.
      * @param Executor $executor
+     * @param BufferedOutput $output
      */
-    public function __construct(Executor $executor)
+    public function __construct(Executor $executor, BufferedOutput $output)
     {
         $this->executor = $executor;
+        $this->output = $output;
     }
 
     /**
@@ -33,9 +41,9 @@ class LinuxAdapter implements OperatingSystemAdapter
      */
     public function getHomeDirectory(string $user): string
     {
-        $output = trim($this->executor->execute('getent', ['passwd', $user], __DIR__, []));
+        $this->executor->execute('getent', ['passwd', $user], __DIR__, []);
 
-        $info = explode(':', $output);
+        $info = explode(':', trim($this->output->getBuffer()));
 
         return $info[count($info)-2];
     }
@@ -46,7 +54,9 @@ class LinuxAdapter implements OperatingSystemAdapter
      */
     public function getCurrentUser(): string
     {
-        return trim($this->executor->execute('whoami', [], __DIR__, []));
+        $this->executor->execute('whoami', [], __DIR__, []);
+
+        return trim($this->output->getBuffer());
     }
 
     /**
@@ -58,6 +68,8 @@ class LinuxAdapter implements OperatingSystemAdapter
     {
         $flag = self::HOSTNAME_FULL === $type ? '-f' : '-s';
 
-        return trim($this->executor->execute('hostname', [$flag], __DIR__, []));
+        $this->executor->execute('hostname', [$flag], __DIR__, []);
+
+        return trim($this->output->getBuffer());
     }
 }

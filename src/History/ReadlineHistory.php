@@ -34,4 +34,9 @@ class ReadlineHistory implements HistoryInterface, FileHistoryInterface
     {
         $this->filename = $filename;
     }
+
+    public function getHistory(): array
+    {
+        return readline_list_history();
+    }
 }

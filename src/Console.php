@@ -12,6 +12,7 @@ use Timesplinter\Oyster\Helper\OutputColorizer;
 use Timesplinter\Oyster\History\HistoryInterface;
 use Timesplinter\Oyster\Input\InputInterface;
 use Timesplinter\Oyster\OperatingSystemAdapter\OperatingSystemAdapter;
+use Timesplinter\Oyster\Output\OutputInterface;
 
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
@@ -28,6 +29,11 @@ final class Console
      * @var InputInterface
      */
     private $input;
+
+    /**
+     * @var OutputInterface
+     */
+    private $output;
 
     /**
      * @var CommandInterface[]|array
@@ -57,6 +63,7 @@ final class Console
     /**
      * Console constructor.
      * @param InputInterface $input
+     * @param OutputInterface $output
      * @param OperatingSystemAdapter $osAdapter
      * @param array|CommandInterface[] $commands
      * @param Executor $executor
@@ -64,12 +71,14 @@ final class Console
      */
     public function __construct(
         InputInterface $input,
+        OutputInterface $output,
         OperatingSystemAdapter $osAdapter,
         array $commands,
         Executor $executor,
         HistoryInterface $history
     ) {
         $this->input = $input;
+        $this->output = $output;
         $this->commands = $commands;
         $this->executor = $executor;
         $this->osAdapter = $osAdapter;
@@ -109,16 +118,15 @@ final class Console
             } elseif (null !== $command = $this->findCommand($commandStr)) {
                 // Console command
                 try {
-                    echo $command->execute($args);
+                    $command->execute($args);
                 } catch (CommandExecutionException $e) {
-                    echo sprintf("%s: %s\n", $commandStr, $e->getMessage());
+                    $this->output->write(sprintf("%s: %s\n", $commandStr, $e->getMessage()));
                 }
             } elseif (null !== $executablePath = $this->findExecutable($commandStr)) {
                 // Script or binary to execute
-                $output = $this->executor->execute($executablePath, $args, getcwd(), $this->config['env']['vars']);
-                echo $output;
+                $this->executor->execute($executablePath, $args, getcwd(), $this->config['env']['vars']);
             } else {
-                printf("Command \"%s\" not found\n" , trim($commandStr));
+                $this->output->write(sprintf("oyster: Command \"%s\" not found\n" , trim($commandStr)));
             }
         }
 
