@@ -5,10 +5,10 @@ declare(strict_types=1);
 
 namespace App;
 
-use Timesplinter\Oyster\Command\CdCommandInterface;
+use Timesplinter\Oyster\Command\CdCommand;
 use Timesplinter\Oyster\Console;
 use Timesplinter\Oyster\Executor;
-use Timesplinter\Oyster\Command\PwdCommandInterface;
+use Timesplinter\Oyster\Command\PwdCommand;
 use Timesplinter\Oyster\Helper\NullHistory;
 use Timesplinter\Oyster\History\ReadlineHistory;
 use Timesplinter\Oyster\Input\ReadlineInput;
@@ -19,8 +19,8 @@ use Timesplinter\Oyster\OperatingSystemAdapter\LinuxAdapter;
 require __DIR__ . '/vendor/autoload.php';
 
 $builtinCommands = [
-    new PwdCommandInterface(),
-    new CdCommandInterface()
+    new PwdCommand(),
+    new CdCommand()
 ];
 
 $executor = new Executor();

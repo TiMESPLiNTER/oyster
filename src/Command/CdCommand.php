@@ -7,7 +7,7 @@ namespace Timesplinter\Oyster\Command;
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
  */
-class CdCommandInterface implements CommandInterface
+class CdCommand implements CommandInterface
 {
 
     /**
