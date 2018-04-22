@@ -22,7 +22,7 @@ final class Console
     /**
      * @var bool
      */
-    private $running = true;
+    private $running = false;
 
     /**
      * @var InputInterface
@@ -78,6 +78,8 @@ final class Console
 
     public function run(): void
     {
+        $this->running = true;
+
         $homeDirectory = $this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser());
 
         if ($this->history instanceof FileHistoryInterface) {
@@ -103,7 +105,7 @@ final class Console
 
             if ('exit' === $commandStr) {
                 // Exit the console
-                $this->running = false;
+                $this->halt();
             } elseif (null !== $command = $this->findCommand($commandStr)) {
                 // Console command
                 try {
@@ -121,6 +123,11 @@ final class Console
         }
 
         $this->history->storeHistory();
+    }
+
+    public function halt(): void
+    {
+        $this->running = false;
     }
 
     /**
