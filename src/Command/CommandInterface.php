@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace Timesplinter\Oyster\Command;
+use Timesplinter\Oyster\Runtime;
 
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
@@ -17,8 +18,8 @@ interface CommandInterface
 
     /**
      * @param array $arguments
+     * @param Runtime $runtime
      * @return int
-     * @throws CommandExecutionException
      */
-    public function execute(array $arguments): int;
+    public function execute(array $arguments, Runtime $runtime): int;
 }

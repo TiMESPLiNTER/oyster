@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace Timesplinter\Oyster\Bin;
 
 use Timesplinter\Oyster\Command\CdCommand;
+use Timesplinter\Oyster\Command\EchoCommand;
 use Timesplinter\Oyster\Command\HistoryCommand;
 use Timesplinter\Oyster\Console;
 use Timesplinter\Oyster\Executor;
@@ -47,7 +48,8 @@ if(true === function_exists('readline')) {
 $builtinCommands = [
     new PwdCommand($stdOutOutput),
     new CdCommand(),
-    new HistoryCommand($stdOutOutput, $history)
+    new HistoryCommand($stdOutOutput, $history),
+    new EchoCommand($stdOutOutput),
 ];
 
 $executor = new Executor($stdOutOutput);

@@ -10,7 +10,7 @@ use Timesplinter\Oyster\Runtime;
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
  */
-class PwdCommand implements CommandInterface
+class EchoCommand implements CommandInterface
 {
 
     /**
@@ -32,17 +32,30 @@ class PwdCommand implements CommandInterface
      */
     public function getIdentifier(): string
     {
-        return 'pwd';
+        return 'echo';
     }
 
     /**
      * @param array $arguments
      * @param Runtime $runtime
      * @return int
+     * @throws CommandExecutionException
      */
     public function execute(array $arguments, Runtime $runtime): int
     {
-        $this->output->writeLn(getcwd());
+        if (count($arguments) > 1) {
+            throw new CommandExecutionException('Only 1 argument allowed', 1);
+        }
+
+        $str = preg_replace_callback('/(\\\)?\$(\w+)/', function($m) use ($runtime) {
+            if ('\\' === $m[1]) {
+                return '$' . $m[2];
+            }
+
+            return $runtime->getEnvVars()[$m[2]];
+        }, $arguments[0]);
+
+        $this->output->writeLn($str);
 
         return 0;
     }

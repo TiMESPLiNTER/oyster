@@ -61,6 +61,11 @@ final class Console
     private $history;
 
     /**
+     * @var Runtime
+     */
+    private $runtime;
+
+    /**
      * Console constructor.
      * @param InputInterface $input
      * @param OutputInterface $output
@@ -87,7 +92,6 @@ final class Console
 
     public function run(): void
     {
-        $this->running = true;
 
         $homeDirectory = $this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser());
 
@@ -99,6 +103,9 @@ final class Console
 
         $this->config = $this->loadConfiguration($homeDirectory);
 
+        $this->runtime = new Runtime($this->config['env']['vars']);
+        $this->running = true;
+
         while (true === $this->running) {
             $temp = $this->input->read($this->preparePs1());
 
@@ -106,7 +113,7 @@ final class Console
                 continue;
             }
 
-            readline_add_history($line);
+            $this->history->addToHistory($line);
 
             foreach (preg_split('/\s+&&\s+/', $line, -1, PREG_SPLIT_NO_EMPTY) as $command) {
                 $commandParts = preg_split('/\s+/', $command, -1, PREG_SPLIT_NO_EMPTY);
@@ -119,13 +126,18 @@ final class Console
                 } elseif (null !== $builtinCommand = $this->findBuiltinCommand($commandStr)) {
                     // Console command
                     try {
-                        $builtinCommand->execute($args);
+                        $returnCode = $builtinCommand->execute($args, $this->runtime);
                     } catch (CommandExecutionException $e) {
                         $this->output->write(sprintf("%s: %s\n", $commandStr, $e->getMessage()));
+
+                        $returnCode = $e->getCode();
                     }
+
+                    $this->runtime->setEnvVar('?', (string) $returnCode);
                 } elseif (null !== $executablePath = $this->findExecutable($commandStr)) {
                     // Script or binary to execute
-                    $this->executor->execute($executablePath, $args, getcwd(), $this->config['env']['vars']);
+                    $this->executor->execute($executablePath, $args, getcwd(), $this->runtime->getEnvVars());
+                    $this->runtime->setEnvVar('?', 'unknown');
                 } else {
                     $this->output->write(sprintf("oyster: Command \"%s\" not found\n" , trim($commandStr)));
                 }
@@ -151,7 +163,7 @@ final class Console
             return $executablePath;
         }
 
-        $paths = explode(':', $this->config['env']['vars']['PATH']);
+        $paths = explode(':', $this->runtime->getEnvVars()['PATH']);
 
         foreach ($paths as $path) {
             if (false !== $executablePath = realpath($path . '/' . $executable)) {
@@ -195,7 +207,7 @@ final class Console
     private function getCwd(): string
     {
         $cwd = getcwd();
-        $homeDirectory = $this->config['env']['vars']['HOME'];
+        $homeDirectory = $this->runtime->getEnvVars()['HOME'];
 
         if (0 === strpos($cwd, $homeDirectory)) {
             $cwd = '~' . substr($cwd, strlen($homeDirectory));

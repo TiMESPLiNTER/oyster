@@ -6,6 +6,7 @@ namespace Timesplinter\Oyster\Command;
 
 use Timesplinter\Oyster\History\HistoryInterface;
 use Timesplinter\Oyster\Output\OutputInterface;
+use Timesplinter\Oyster\Runtime;
 
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
@@ -44,9 +45,10 @@ class HistoryCommand implements CommandInterface
 
     /**
      * @param array $arguments
+     * @param Runtime $runtime
      * @return int
      */
-    public function execute(array $arguments): int
+    public function execute(array $arguments, Runtime $runtime): int
     {
         $this->output->writeLn(implode(PHP_EOL, $this->history->getHistory()));
 
