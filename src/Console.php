@@ -92,7 +92,6 @@ final class Console
 
     public function run(): void
     {
-
         $homeDirectory = $this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser());
 
         if ($this->history instanceof FileHistoryInterface) {
@@ -231,16 +230,34 @@ final class Console
             }
         }
 
-        $config += [
+        $config = $this->mergeConfigRecursive([
             'ps1' => '$ ',
             'env' => [
                 'vars' => [
                     'HOME' => $configDirectory,
-                    'PATH' => ''
+                    'PATH' => '/usr/bin:/bin:/usr/sbin'
                 ]
             ]
-        ];
+        ], $config);
 
         return $config;
+    }
+
+    /**
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    private function mergeConfigRecursive(array $array1, array $array2): array
+    {
+        if (empty($array1)) return $array2; //optimize the base case
+
+        foreach ($array2 as $key => $value) {
+            if (is_array($value) && isset($array1[$key]) && is_array($array1[$key])) {
+                $value = $this->mergeConfigRecursive($array1[$key], $value);
+            }
+            $array1[$key] = $value;
+        }
+        return $array1;
     }
 }
