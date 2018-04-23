@@ -94,6 +94,8 @@ final class Console
     {
         $homeDirectory = $this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser());
 
+        $this->setTitle('Oyster 🐚');
+
         if ($this->history instanceof FileHistoryInterface) {
             $this->history->setFilename($homeDirectory . DIRECTORY_SEPARATOR . '.oyster_history');
         }
@@ -241,6 +243,14 @@ final class Console
         ], $config);
 
         return $config;
+    }
+
+    /**
+     * @param string $title
+     */
+    private function setTitle(string $title): void
+    {
+        $this->output->write("\033]0;".$title."\007");
     }
 
     /**
