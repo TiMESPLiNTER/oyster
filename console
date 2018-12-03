@@ -46,7 +46,7 @@ if(true === function_exists('readline')) {
 
 $builtinCommands = [
     new PwdCommand($stdOutOutput),
-    new CdCommand(),
+    new CdCommand($osAdapter),
     new HistoryCommand($stdOutOutput, $history),
 ];
 
