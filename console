@@ -6,7 +6,6 @@ declare(strict_types=1);
 namespace Timesplinter\Oyster\Bin;
 
 use Timesplinter\Oyster\Command\CdCommand;
-use Timesplinter\Oyster\Command\EchoCommand;
 use Timesplinter\Oyster\Command\HistoryCommand;
 use Timesplinter\Oyster\Console;
 use Timesplinter\Oyster\Executor;
@@ -25,7 +24,7 @@ require __DIR__ . '/vendor/autoload.php';
 $stdOutOutput = new StdOutOutput();
 
 $osAdapterOutput = new BufferedOutput();
-$osAdapterExecutor = new Executor($osAdapterOutput);
+$osAdapterExecutor = new Executor($osAdapterOutput, Executor::MODE_PIPE);
 
 if ('Darwin' === PHP_OS) {
     $osAdapter = new DarwinAdapter($osAdapterExecutor, $osAdapterOutput);
@@ -47,12 +46,11 @@ if(true === function_exists('readline')) {
 
 $builtinCommands = [
     new PwdCommand($stdOutOutput),
-    new CdCommand(),
+    new CdCommand($osAdapter),
     new HistoryCommand($stdOutOutput, $history),
-    new EchoCommand($stdOutOutput),
 ];
 
-$executor = new Executor($stdOutOutput);
+$executor = new Executor($stdOutOutput, Executor::MODE_TTY);
 
 $console = new Console($input, $stdOutOutput, $osAdapter, $builtinCommands, $executor, $history);
 $console->run();

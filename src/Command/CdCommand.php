@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 namespace Timesplinter\Oyster\Command;
+
+use Timesplinter\Oyster\OperatingSystemAdapter\OperatingSystemAdapter;
 use Timesplinter\Oyster\Runtime;
 
 /**
@@ -10,6 +12,19 @@ use Timesplinter\Oyster\Runtime;
  */
 class CdCommand implements CommandInterface
 {
+
+    /**
+     * @var OperatingSystemAdapter
+     */
+    private $osAdapter;
+
+    /**
+     * @param OperatingSystemAdapter $osAdapter
+     */
+    public function __construct(OperatingSystemAdapter $osAdapter)
+    {
+        $this->osAdapter = $osAdapter;
+    }
 
     /**
      * @return string
@@ -37,7 +52,9 @@ class CdCommand implements CommandInterface
 
         $path = $arguments[0];
 
-        if (0 !== strpos($path, '/')) {
+        if ('~' === $path) {
+            $path = realpath($this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser()));
+        } elseif (0 !== strpos($path, '/')) {
             $path = realpath(getcwd() . DIRECTORY_SEPARATOR . $path);
         }
 
