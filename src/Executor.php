@@ -77,9 +77,6 @@ class Executor
         );
 
         if (is_resource($process)) {
-            /*fwrite($pipes[0], '<?php echo "HELLO FROM TEST"; ?>'); // here directly the code of child.php
-            fclose($pipes[0]);*/
-
             while (true === ($info = proc_get_status($process))['running']) {
 
             }
@@ -92,10 +89,6 @@ class Executor
             }
 
             proc_close($process);
-
-            /*if (self::MODE_TTY === $this->mode) {
-                $this->output->write("\033[1J");
-            }*/
         }
 
         return 0;
