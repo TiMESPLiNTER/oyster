@@ -9,12 +9,12 @@ use Timesplinter\Oyster\Output\OutputInterface;
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
  */
-class Executor
+final class Executor implements ExecutorInterface
 {
 
-    const MODE_TTY = 'tty';
+    public const MODE_TTY = 'tty';
 
-    const MODE_PIPE = 'pipe';
+    public const MODE_PIPE = 'pipe';
 
     /**
      * @var OutputInterface
@@ -37,13 +37,6 @@ class Executor
         $this->mode = $mode;
     }
 
-    /**
-     * @param string $command
-     * @param array $arguments
-     * @param string $cwd
-     * @param array $vars
-     * @return int
-     */
     public function execute(string $command, array $arguments, string $cwd, array $vars): int
     {
         $stream = null;
@@ -77,7 +70,7 @@ class Executor
         if (is_resource($process)) {
             while (true === ($info = proc_get_status($process))['running']);
 
-            $exitCode = $info['exitCode'];
+            $exitCode = $info['exitcode'];
 
             if (self::MODE_PIPE === $this->mode) {
                 $this->output->write(stream_get_contents($pipes[1]));
