@@ -8,6 +8,7 @@ namespace Timesplinter\Oyster\Bin;
 use Timesplinter\Oyster\Command\CdCommand;
 use Timesplinter\Oyster\Command\HistoryCommand;
 use Timesplinter\Oyster\Console;
+use Timesplinter\Oyster\Event\EventDispatcher;
 use Timesplinter\Oyster\Executor;
 use Timesplinter\Oyster\Command\PwdCommand;
 use Timesplinter\Oyster\Helper\NullHistory;
@@ -18,6 +19,7 @@ use Timesplinter\Oyster\OperatingSystemAdapter\DarwinAdapter;
 use Timesplinter\Oyster\OperatingSystemAdapter\LinuxAdapter;
 use Timesplinter\Oyster\Output\BufferedOutput;
 use Timesplinter\Oyster\Output\StdOutOutput;
+use Timesplinter\Oyster\Plugin\ExecutionTimePlugin;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -51,6 +53,11 @@ $builtinCommands = [
 ];
 
 $executor = new Executor($stdOutOutput, Executor::MODE_TTY);
+$eventDispatcher = new EventDispatcher();
 
-$console = new Console($input, $stdOutOutput, $osAdapter, $builtinCommands, $executor, $history);
+$console = new Console($input, $stdOutOutput, $osAdapter, $builtinCommands, $executor, $history, $eventDispatcher);
+
+// Register plugins
+$console->registerPlugin(new ExecutionTimePlugin($stdOutOutput));
+
 $console->run();

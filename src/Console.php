@@ -7,6 +7,12 @@ namespace Timesplinter\Oyster;
 
 use Timesplinter\Oyster\Command\CommandInterface;
 use Timesplinter\Oyster\Command\CommandExecutionException;
+use Timesplinter\Oyster\Event\CommandStartEvent;
+use Timesplinter\Oyster\Event\CommandStopEvent;
+use Timesplinter\Oyster\Event\EventDispatcherInterface;
+use Timesplinter\Oyster\Event\ExecutableStartEvent;
+use Timesplinter\Oyster\Event\ExecutableStopEvent;
+use Timesplinter\Oyster\Event\SignalEvent;
 use Timesplinter\Oyster\History\FileHistoryInterface;
 use Timesplinter\Oyster\History\ReadlineHistory;
 use Timesplinter\Oyster\Helper\OutputColorizer;
@@ -14,6 +20,7 @@ use Timesplinter\Oyster\History\HistoryInterface;
 use Timesplinter\Oyster\Input\InputInterface;
 use Timesplinter\Oyster\OperatingSystemAdapter\OperatingSystemAdapter;
 use Timesplinter\Oyster\Output\OutputInterface;
+use Timesplinter\Oyster\Plugin\PluginInterface;
 
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
@@ -42,7 +49,7 @@ final class Console
     private $commands;
 
     /**
-     * @var Executor
+     * @var ExecutorInterface
      */
     private $executor;
 
@@ -67,21 +74,23 @@ final class Console
     private $runtime;
 
     /**
-     * Console constructor.
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param OperatingSystemAdapter $osAdapter
-     * @param array|CommandInterface[] $commands
-     * @param Executor $executor
-     * @param HistoryInterface $history
+     * @var EventDispatcherInterface
      */
+    private $eventDispatcher;
+
+    /**
+     * @var array<PluginInterface>
+     */
+    private $plugins = [];
+
     public function __construct(
         InputInterface $input,
         OutputInterface $output,
         OperatingSystemAdapter $osAdapter,
         array $commands,
-        Executor $executor,
-        HistoryInterface $history
+        ExecutorInterface $executor,
+        HistoryInterface $history,
+        EventDispatcherInterface $eventDispatcher
     ) {
         $this->input = $input;
         $this->output = $output;
@@ -89,12 +98,15 @@ final class Console
         $this->executor = $executor;
         $this->osAdapter = $osAdapter;
         $this->history = $history;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function run(): void
     {
         $this->handleSignals($this->output);
 
+        $this->initializePlugins();
+        
         $homeDirectory = $this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser());
 
         $this->setTitle('Oyster 🐚');
@@ -129,6 +141,8 @@ final class Console
                     $this->halt();
                 } elseif (null !== $builtinCommand = $this->findBuiltinCommand($commandStr)) {
                     // Console command
+                    $this->eventDispatcher->dispatch(new CommandStartEvent());
+
                     try {
                         $returnCode = $builtinCommand->execute($args, $this->runtime);
                     } catch (CommandExecutionException $e) {
@@ -138,10 +152,21 @@ final class Console
                     }
 
                     $this->runtime->setEnvVar('?', (string) $returnCode);
+
+                    $this->eventDispatcher->dispatch(new CommandStopEvent());
                 } elseif (null !== $executablePath = $this->findExecutable($commandStr)) {
                     // Script or binary to execute
-                    $this->executor->execute($executablePath, $args, getcwd(), $this->runtime->getEnvVars());
-                    $this->runtime->setEnvVar('?', 'unknown');
+                    $this->eventDispatcher->dispatch(new ExecutableStartEvent());
+
+                    $returnCode =  $this->executor->execute(
+                        $executablePath,
+                        $args,
+                        getcwd(),
+                        $this->runtime->getEnvVars()
+                    );
+                    $this->runtime->setEnvVar('?', (string) $returnCode);
+
+                    $this->eventDispatcher->dispatch(new ExecutableStopEvent());
                 } else {
                     $this->output->write(sprintf("oyster: Command \"%s\" not found\n" , trim($commandStr)));
                 }
@@ -156,17 +181,24 @@ final class Console
         $this->running = false;
     }
 
+    public function registerPlugin(PluginInterface $plugin): void
+    {
+        $this->plugins[] = $plugin;
+    }
+
     private function handleSignals(OutputInterface $output): void
     {
-        $signalHandler = function(int $sig) use ($output): void {
-            switch($sig) {
+        $signalHandler = function(int $signal) use ($output): void {
+            $this->eventDispatcher->dispatch(new SignalEvent($signal));
+
+            switch($signal) {
                 case SIGINT:
                 case SIGHUP:
                 case SIGTERM:
                     // do nothing
                     break;
                 default:
-                    $output->write(sprintf('Unhandled signal "%d". Exiting Oyster.', $sig));
+                    $output->write(sprintf('Unhandled signal "%d".', $signal));
                     break;
             }
         };
@@ -292,5 +324,15 @@ final class Console
             $array1[$key] = $value;
         }
         return $array1;
+    }
+
+    private function initializePlugins(): void
+    {
+        foreach ($this->plugins as $plugin) {
+            /** @var PluginInterface $plugin */
+            foreach ($plugin->register() as $event => $eventHandler) {
+                $this->eventDispatcher->subscribe($event, $eventHandler);
+            }
+        }
     }
 }

@@ -26,11 +26,6 @@ final class Executor implements ExecutorInterface
      */
     private $mode;
 
-    /**
-     * Executor constructor.
-     * @param OutputInterface $output
-     * @param string          $mode
-     */
     public function __construct(OutputInterface $output, string $mode)
     {
         $this->output = $output;

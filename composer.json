@@ -11,6 +11,12 @@
         "ext-json": "*",
         "ext-pcntl": "*"
     },
+    "require-dev": {
+        "ext-readline": "*"
+    },
+    "suggest": {
+        "ext-readline": "For a better console history"
+    },
     "bin": [
         "console"
     ]

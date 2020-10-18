@@ -9,7 +9,7 @@ use Timesplinter\Oyster\History\HistoryInterface;
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
  */
-class NullHistory implements HistoryInterface
+final class NullHistory implements HistoryInterface
 {
 
     public function loadHistory(): void

@@ -7,13 +7,20 @@ namespace Timesplinter\Oyster\History;
 /**
  * @author Pascal Muenst <pascal@timesplinter.ch>
  */
-class ReadlineHistory implements HistoryInterface, FileHistoryInterface
+final class ReadlineHistory implements HistoryInterface, FileHistoryInterface
 {
 
     /**
      * @var string
      */
     private $filename;
+
+    public function __construct()
+    {
+        if (!function_exists('readline_read_history')) {
+            throw new \RuntimeException('readline PHP extension is missing.');
+        }
+    }
 
     public function loadHistory(): void
     {
