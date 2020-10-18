@@ -38,7 +38,6 @@ class Executor
     }
 
     /**
-     * @todo make async! and needs TTY support for vim etc [e.x. system("command > `tty`")]
      * @param string $command
      * @param array $arguments
      * @param string $cwd
@@ -66,8 +65,6 @@ class Executor
         } else {
             throw new \RuntimeException(sprintf('Unknown mode "%s"', $this->mode));
         }
-
-        //var_dump($command . ' ' . implode(' ', $arguments));
 
         $process = proc_open(
             $command . (count($arguments) > 0 ? ' ' . implode(' ', $arguments) : ''),
