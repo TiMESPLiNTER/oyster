@@ -38,6 +38,7 @@ class Executor
     }
 
     /**
+     * @todo make async! and needs TTY support for vim etc [e.x. system("command > `tty`")]
      * @param string $command
      * @param array $arguments
      * @param string $cwd
@@ -48,6 +49,7 @@ class Executor
     {
         $stream = null;
         $streamContent = null;
+        $exitCode = 0;
 
         if (self::MODE_TTY === $this->mode) {
             $descriptorSpec = [
@@ -65,6 +67,8 @@ class Executor
             throw new \RuntimeException(sprintf('Unknown mode "%s"', $this->mode));
         }
 
+        //var_dump($command . ' ' . implode(' ', $arguments));
+
         $process = proc_open(
             $command . (count($arguments) > 0 ? ' ' . implode(' ', $arguments) : ''),
             $descriptorSpec,
@@ -76,6 +80,8 @@ class Executor
         if (is_resource($process)) {
             while (true === ($info = proc_get_status($process))['running']);
 
+            $exitCode = $info['exitCode'];
+
             if (self::MODE_PIPE === $this->mode) {
                 $this->output->write(stream_get_contents($pipes[1]));
                 fclose($pipes[1]);
@@ -84,6 +90,6 @@ class Executor
             proc_close($process);
         }
 
-        return 0;
+        return $exitCode;
     }
 }
