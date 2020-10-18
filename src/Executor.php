@@ -38,7 +38,6 @@ class Executor
     }
 
     /**
-     * @todo make async! and needs TTY support for vim etc [e.x. system("command > `tty`")]
      * @param string $command
      * @param array $arguments
      * @param string $cwd
@@ -66,8 +65,6 @@ class Executor
             throw new \RuntimeException(sprintf('Unknown mode "%s"', $this->mode));
         }
 
-        //var_dump($command . ' ' . implode(' ', $arguments));
-
         $process = proc_open(
             $command . (count($arguments) > 0 ? ' ' . implode(' ', $arguments) : ''),
             $descriptorSpec,
@@ -77,11 +74,7 @@ class Executor
         );
 
         if (is_resource($process)) {
-            while (true === ($info = proc_get_status($process))['running']) {
-
-            }
-
-            file_put_contents('returnCodes.txt', $command . ' -> ' .var_export($info, true) . PHP_EOL . PHP_EOL, FILE_APPEND);
+            while (true === ($info = proc_get_status($process))['running']);
 
             if (self::MODE_PIPE === $this->mode) {
                 $this->output->write(stream_get_contents($pipes[1]));

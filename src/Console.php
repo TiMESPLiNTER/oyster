@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+declare(ticks=1);
 
 namespace Timesplinter\Oyster;
 
@@ -92,6 +93,8 @@ final class Console
 
     public function run(): void
     {
+        $this->handleSignals($this->output);
+
         $homeDirectory = $this->osAdapter->getHomeDirectory($this->osAdapter->getCurrentUser());
 
         $this->setTitle('Oyster 🐚');
@@ -151,6 +154,26 @@ final class Console
     public function halt(): void
     {
         $this->running = false;
+    }
+
+    private function handleSignals(OutputInterface $output): void
+    {
+        $signalHandler = function(int $sig) use ($output): void {
+            switch($sig) {
+                case SIGINT:
+                case SIGHUP:
+                case SIGTERM:
+                    // do nothing
+                    break;
+                default:
+                    $output->write(sprintf('Unhandled signal "%d". Exiting Oyster.', $sig));
+                    break;
+            }
+        };
+
+        pcntl_signal(SIGINT,  $signalHandler);
+        pcntl_signal(SIGTERM, $signalHandler);
+        pcntl_signal(SIGHUP,  $signalHandler);
     }
 
     /**
@@ -237,7 +260,7 @@ final class Console
             'env' => [
                 'vars' => [
                     'HOME' => $configDirectory,
-                    'PATH' => '/usr/bin:/bin:/usr/sbin'
+                    'PATH' => '/sbin:/usr/bin:/bin:/usr/sbin'
                 ]
             ]
         ], $config);
